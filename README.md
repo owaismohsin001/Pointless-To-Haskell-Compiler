@@ -18,6 +18,6 @@ So basically, file name of the compiler followed by that of the source file you 
 ```
 To run the generated file you should look at the generated folder named `output` and your files will be avalible there.  Then you can run them like this.
 ```
-[source-file-name].lua
+[source-file-name].hs
 ```
 so, for examle `example.ptls` would turn into `example.hs`.
