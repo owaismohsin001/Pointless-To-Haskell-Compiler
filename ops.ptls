@@ -1,0 +1,2 @@
+multiply(a, b) = a*b
+addition(a, b) = a+b

@@ -1,0 +1,51 @@
+import "ops.ptls" as operators
+import "unaries.ptls" as unary
+
+isEmpty(list) = list == Empty
+headOfList(list) = list.!getHead
+tailOfList(list) = list.!getTail
+
+reduce(func, acc, list) =
+  if isEmpty(list) then acc
+  else reduce(func, func(acc, headOfList(list)), tailOfList(list))
+
+infiniteList(func, n) = [n] ++ infiniteList(func, func(n))
+
+takeIn(n, list) =
+  if n < 1 then []
+  else if isEmpty(list) then []
+  else [headOfList(list)] ++ takeIn(unary.dec(n), tailOfList(list))
+
+range(init, ender) =
+  infiniteList(unary.inc, init)
+  |> takeIn(ender)
+
+filterList(func, list) =
+  if isEmpty(list) then []
+
+  else if func(headOfList(list))
+    then [headOfList(list)] ++ filterList(func, tailOfList(list))
+
+  else filterList(func, tailOfList(list))
+
+mapList(func, list) =
+  if isEmpty(list) then []
+  else [func(headOfList(list))] ++ mapList(func, tailOfList(list))
+
+concatenateMap(func, lists) = lists |> mapList(func) |> concatenate
+concatenate(lists) =
+  if isEmpty(lists) then []
+  else headOfList(lists) ++ concatenate(tailOfList(lists))
+
+sumUp(list) = reduce(operators.addition, 0, list)
+
+multiply(list) = reduce(operators.multiply, 1, list)
+
+output = [
+          (for i in range(1, 4) yield i)
+          |> filterList(n => n!=3)
+          |> mapList(n => n**2)
+          |> sumUp
+          |> range(1)
+          |> multiply
+        ]
