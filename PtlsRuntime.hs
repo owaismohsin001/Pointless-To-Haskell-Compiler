@@ -249,7 +249,9 @@ ptlsDiv a (PtlsException b) = createException b
 ptlsDiv a b = createException (createString (getLocation a) ("Can't divide " ++ show a ++ " with " ++ show b))
 
 ptlsMod :: Value -> Value -> Value
-ptlsMod (PtlsNumber (PtlsLocated a loc)) (PtlsNumber (PtlsLocated b _)) = createNumber loc 4.0
+ptlsMod (PtlsNumber (PtlsLocated a loc)) (PtlsNumber (PtlsLocated b _)) = createNumber loc (a - (b*tmp1)) where
+  tmp1 :: Float
+  tmp1 = fromIntegral (quot (round a) (round b))
 ptlsMod (PtlsException a) b = createException a
 ptlsMod a (PtlsException b) = createException b
 ptlsMod a b = createException (createString (getLocation a) ("Can't modulus " ++ show a ++ " with " ++ show b))
