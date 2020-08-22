@@ -5,7 +5,7 @@ This transpiler is an implementation of a dynamic, declarative and functional pr
 Haskell runtime requires you to install two additional dependencies, I used Haskell platform but I don't know how many of these are avalible in Haskell by default, they are `System.Ramdom` and `Data.Hashable`. So just `cabal install` them.
 
 # Limitations
-There are many limitation in this compiler right now, as it's runtime doesn't implement many language fields such as IO features of Pointless. They will be implemented later as the compiler continues to evolves.
+There are many limitation in this compiler right now, as it's runtime doesn't implement many language fields such as IO features of Pointless. They will be implemented later as the compiler continues to evolve.
 
 # How to use
 It's very simple, first you build it with your favorite flags with nim's compiler then you write command like this,
