@@ -95,11 +95,14 @@ instance Hashable Value where
   hashWithSalt sa (PtlsString s) = sa `hashWithSalt` value s
   hashWithSalt sa (PtlsBool b) = sa `hashWithSalt` value b
   hashWithSalt sa (PtlsLabel lb) = sa `hashWithSalt` value lb
+  hashWithSalt sa (PtlsTuple _ (PtlsLocated [a] _) _ _) = sa `hashWithSalt` hash a
+  hashWithSalt sa (PtlsTuple _ (PtlsLocated (x:xs) _) lab _) = (sa `hashWithSalt` x) + (sa `hashWithSalt` xs) + hash lab
 
   hash (PtlsNumber n) = 1111 `hashWithSalt` value n
   hash (PtlsString s) = 2222 `hashWithSalt` value s
   hash (PtlsBool b) = 10 `hashWithSalt` value b
   hash (PtlsLabel lb) = 107 `hashWithSalt` value lb
+  hash (PtlsTuple tup (PtlsLocated (x:xs) loc) lab len) = 193 `hashWithSalt` createLabeledTuple tup len (createLocateable (x:xs) loc) (value (labelValue lab))
 
 -- Helpers
 
@@ -300,6 +303,8 @@ getIndex :: Value -> Value -> Value
 getIndex (PtlsDict m _) (PtlsNumber k) = getIfHasIndex m k (createNumber (location k))
 getIndex (PtlsDict m _) (PtlsString k) = getIfHasIndex m k (createString (location k))
 getIndex (PtlsDict m _) (PtlsBool k) = getIfHasIndex m k (createBool (location k))
+getIndex (PtlsDict m _) (PtlsTuple tup (PtlsLocated lis location) (PtlsLabel lab) len) = getIfHasIndex m lab k where
+  k = createLabeledTuple tup len (createLocateable lis location)
 getIndex (PtlsArray (PtlsLocated a _)) (PtlsNumber (PtlsLocated b loc)) =
   case a Vector.!? round b of
     Just x -> x
@@ -451,6 +456,9 @@ updateIndex (PtlsDict m l) (PtlsString (PtlsLocated k lock)) r =
   internalCreateDict (StrictMap.insert (hash (createString lock k)) r `drill` m) (updateTupleList l k r (createString lock) ptlsEquals)
 updateIndex (PtlsDict m l) (PtlsBool (PtlsLocated k lock)) r =
   internalCreateDict (StrictMap.insert (hash (createBool lock k)) r `drill` m) (updateTupleList l k r (createBool lock) ptlsEquals)
+updateIndex (PtlsDict m l) (PtlsTuple tup (PtlsLocated lis lock) (PtlsLabel (PtlsLocated lab _)) len) r =
+  internalCreateDict (StrictMap.insert (hash (createLabeledTuple tup len located lab)) r `drill` m) (updateTupleList l lab r (createLabeledTuple tup len located) ptlsEquals) where
+    located = createLocateable lis lock
 updateIndex (PtlsArray arr) (PtlsNumber (PtlsLocated n locn)) r =
   case value arr Vector.!? round n of
     Just _ -> internalCreateArray ((Vector.// [(round n, r)]) `drill` arr)
