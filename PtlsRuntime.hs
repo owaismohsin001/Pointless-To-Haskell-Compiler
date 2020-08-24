@@ -66,6 +66,9 @@ unterminatedListValue loc (x:xs) = filter (\x -> not (is_ptlsTrue (x `ptlsEquals
 getList (PtlsList (PtlsLocated l loc)) = l
 getList a = error (show (createException (createString (getLocation a) (show a ++ " is not a list"))))
 
+getTuple (PtlsTuple t _ _ _) = t
+getTuple nt = error(show (createException(createString (getLocation nt) (show nt ++ " is not a tuple"))))
+
 instance Show Value where
   show (PtlsString s) = value s
   show (PtlsNumber n) = show (value n)

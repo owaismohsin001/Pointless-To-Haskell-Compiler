@@ -499,7 +499,7 @@ proc dispatch(immut_env: Env, immut_node: ASTNode, main: bool, immut_traceLocs: 
             let typeDecls = defNode.lhs.tuple_elems.map(proc(n: ASTNode) : string = n.identifier & " :: Value").join("\n")
             let lhs = "(" & defNode.lhs.tuple_elems.map(proc(n: ASTNode) : string = n.identifier).join(", ") & ")"
             let faliureMessage = "error (show (createException (createString (" & defNode.rhs.location.haskellLoc & ") (\"Can't destructure tuple to " & $len(defNode.lhs.tuple_elems) & " names\"))))"
-            let rhs = "case fromDynamic (tup " & eval[string](env, defNode.rhs) & ") of \n Nothing -> " & faliureMessage &
+            let rhs = "case fromDynamic (getTuple " & eval[string](env, defNode.rhs) & ") of \n Nothing -> " & faliureMessage &
               "\n Just x -> x"
             evaluated_defs.add(typeDecls & "\n" & lhs & " = " & rhs & "\n")
           else:
@@ -566,7 +566,7 @@ proc dispatch(immut_env: Env, immut_node: ASTNode, main: bool, immut_traceLocs: 
             let typeDecls = defNode.lhs.tuple_elems.map(proc(n: ASTNode) : string = n.identifier & " :: Value").join("\n")
             let lhs = "(" & defNode.lhs.tuple_elems.map(proc(n: ASTNode) : string = n.identifier).join(", ") & ")"
             let faliureMessage = "error (show (createException (createString (" & defNode.rhs.location.haskellLoc & ") \"Can't destructure tuple to " & $len(defNode.lhs.tuple_elems) & " names\")))"
-            let rhs = "case fromDynamic (tup " & eval[string](env, defNode.rhs) & ") of \n Nothing -> " & faliureMessage &
+            let rhs = "case fromDynamic (getTuple " & eval[string](env, defNode.rhs) & ") of \n Nothing -> " & faliureMessage &
               "\n Just x -> x"
             defs.add(typeDecls & "\n" & lhs & " = " & rhs & "\n")
           else:
