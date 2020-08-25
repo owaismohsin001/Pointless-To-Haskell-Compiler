@@ -2,50 +2,64 @@ import "ops.ptls" as operators
 import "unaries.ptls" as unary
 
 isEmpty(list) = list == Empty
-headOfList(list) = list.!getHead
-tailOfList(list) = list.!getTail
+head(list) = list.!getHead
+tail(list) = list.!getTail
 
 reduce(func, acc, list) =
   if isEmpty(list) then acc
-  else reduce(func, func(acc, headOfList(list)), tailOfList(list))
+  else reduce(func, func(acc, head(list)), tail(list))
 
 infiniteList(func, n) = [n] ++ infiniteList(func, func(n))
 
-takeIn(n, list) =
+take(n, list) =
   if n < 1 then []
   else if isEmpty(list) then []
-  else [headOfList(list)] ++ takeIn(unary.dec(n), tailOfList(list))
+  else [head(list)] ++ take(unary.dec(n), tail(list))
 
 range(init, ender) =
   infiniteList(unary.inc, init)
-  |> takeIn(ender)
+  |> take(ender)
 
-filterList(func, list) =
+filter(func, list) =
   if isEmpty(list) then []
 
-  else if func(headOfList(list))
-    then [headOfList(list)] ++ filterList(func, tailOfList(list))
+  else if func(head(list))
+    then [head(list)] ++ filter(func, tail(list))
 
-  else filterList(func, tailOfList(list))
+  else filter(func, tail(list))
 
-mapList(func, list) =
+map(func, list) =
   if isEmpty(list) then []
-  else [func(headOfList(list))] ++ mapList(func, tailOfList(list))
+  else [func(head(list))] ++ map(func, tail(list))
 
-concatenateMap(func, lists) = lists |> mapList(func) |> concatenate
+concatenateMap(func, lists) = lists |> map(func) |> concatenate
 concatenate(lists) =
   if isEmpty(lists) then []
-  else headOfList(lists) ++ concatenate(tailOfList(lists))
+  else head(lists) ++ concatenate(tail(lists))
 
 sumUp(list) = reduce(operators.addition, 0, list)
 
 multiply(list) = reduce(operators.multiply, 1, list)
 
+ i = {
+  a = 4
+  dc = {
+    "b": 11
+  }
+}
+
+i2 = i with $.dc["b"] = 1
+
 output = [
-          (for i in range(1, 4) yield i)
-          |> filterList(n => n!=3)
-          |> mapList(n => n**2)
+          (for i in range(1, i.a) yield i)
+          |> filter(n => n!=b)
+          |> map(n => n**a)
           |> sumUp
-          |> range(1)
+          |> range(i2.dc["b"])
           |> multiply
-        ]
+        ] where (a, b) = (2,
+          try
+            throw 2
+          catch (x => x==2)
+            (x => 3)
+          )

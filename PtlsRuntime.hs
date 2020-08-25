@@ -1,4 +1,4 @@
-module PtlsRuntime (module PtlsRuntime, module Data.Dynamic) where
+module PtlsRuntime (module PtlsRuntime, module Data.Dynamic, module Data.Maybe) where
 
 import Debug.Trace
 import Data.Char

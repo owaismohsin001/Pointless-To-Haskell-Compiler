@@ -412,7 +412,7 @@ proc dispatch(immut_env: Env, immut_node: ASTNode, main: bool, immut_traceLocs: 
         let condition = eval[string](env, node.ifClause)
         var str =  "if is_ptlsTrue(" & condition & ") then " & eval[string](env, node.thenExpr)
         if node.elseExpr == nil:
-          str.add(" else error(show (createString (" & node.location.haskellLoc & ") \"No case matched\"))")
+          str.add(" else Prelude.error(Prelude.show (createString (" & node.location.haskellLoc & ") \"No case matched\"))")
         else:
           str.add(" else " & eval[string](env, node.elseExpr))
         return "(" & str & ")"
@@ -498,7 +498,7 @@ proc dispatch(immut_env: Env, immut_node: ASTNode, main: bool, immut_traceLocs: 
           if defNode.lhs.NodeType == Tuple:
             let typeDecls = defNode.lhs.tuple_elems.map(proc(n: ASTNode) : string = n.identifier & " :: Value").join("\n")
             let lhs = "(" & defNode.lhs.tuple_elems.map(proc(n: ASTNode) : string = n.identifier).join(", ") & ")"
-            let faliureMessage = "error (show (createException (createString (" & defNode.rhs.location.haskellLoc & ") (\"Can't destructure tuple to " & $len(defNode.lhs.tuple_elems) & " names\"))))"
+            let faliureMessage = "Prelude.error (Prelude.show (createException (createString (" & defNode.rhs.location.haskellLoc & ") (\"Can't destructure tuple to " & $len(defNode.lhs.tuple_elems) & " names\"))))"
             let rhs = "case fromDynamic (getTuple " & eval[string](env, defNode.rhs) & ") of \n Nothing -> " & faliureMessage &
               "\n Just x -> x"
             evaluated_defs.add(typeDecls & "\n" & lhs & " = " & rhs & "\n")
@@ -515,12 +515,12 @@ proc dispatch(immut_env: Env, immut_node: ASTNode, main: bool, immut_traceLocs: 
           var exp = exports.exports.map(proc(n: ASTNode) : string = n.identifier & ", " & "\"" & n.identifier & "\"").join(", ")
           evaluated_export = "export = [" & exp & "]"
 
-        let between = if main: "main = do\n case output of\n  PtlsException e -> putStrLn (show (createException e))\n  otherwise -> putStrLn (show (isPtlsList output))"
+        let between = if main: "main = do\n case output of\n  PtlsException e -> Prelude.putStrLn (Prelude.show (createException e))\n  otherwise -> Prelude.putStrLn (Prelude.show (isPtlsList output))"
                       else: ""
         let fname = node.location.path.split("/")[len(node.location.path.split("/")) - 1]
         let modDecl = if main: ""
                       else: "module " & capitalizeAscii(fname.split(".")[0]) & " (export) where \n\n"
-        return modDecl & "import PtlsRuntime\n" & evaluated_imports & "\n" &
+        return modDecl & "import PtlsRuntime\nimport Prelude(putStrLn, show, error)\nimport RePrelude\n" & evaluated_imports & "\n" &
         evaluated_defs & "\n" & evaluated_export & "\n\n" & between & "\n"
 
       of Node.Requires:
@@ -565,7 +565,7 @@ proc dispatch(immut_env: Env, immut_node: ASTNode, main: bool, immut_traceLocs: 
           if defNode.lhs.NodeType == Tuple:
             let typeDecls = defNode.lhs.tuple_elems.map(proc(n: ASTNode) : string = n.identifier & " :: Value").join("\n")
             let lhs = "(" & defNode.lhs.tuple_elems.map(proc(n: ASTNode) : string = n.identifier).join(", ") & ")"
-            let faliureMessage = "error (show (createException (createString (" & defNode.rhs.location.haskellLoc & ") \"Can't destructure tuple to " & $len(defNode.lhs.tuple_elems) & " names\")))"
+            let faliureMessage = "Prelude.error (Prelude.show (createException (createString (" & defNode.rhs.location.haskellLoc & ") \"Can't destructure tuple to " & $len(defNode.lhs.tuple_elems) & " names\")))"
             let rhs = "case fromDynamic (getTuple " & eval[string](env, defNode.rhs) & ") of \n Nothing -> " & faliureMessage &
               "\n Just x -> x"
             defs.add(typeDecls & "\n" & lhs & " = " & rhs & "\n")
@@ -632,5 +632,6 @@ let compiled_text = compile(program, name, true)
 if not existsDir("output"):
   createDir("output")
 copyFile("PtlsRuntime.hs", "output/PtlsRuntime.hs")
+copyFile("rePrelude.hs", "output/rePrelude.hs")
 writeFile("output/" & name & ".hs", compiled_text)
 echo compiled_text
