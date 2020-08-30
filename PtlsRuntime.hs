@@ -155,8 +155,8 @@ internalCreateDict d l = PtlsDict{dictValue = copyLocatable d, showDictValue = l
 internalCreateObject o so lb = PtlsObject{objValue = copyLocatable o, showObj = so, objLabel = lb}
 internalCreateArray arr = PtlsArray{arr = copyLocatable arr}
 
-ptlsEquals (PtlsException a) _ = createException a
-ptlsEquals _ (PtlsException b) = createException b
+ptlsEquals a@(PtlsException _) _ = a
+ptlsEquals _ b@(PtlsException _) = b
 ptlsEquals (PtlsArray (PtlsLocated a1 loc1)) (PtlsArray (PtlsLocated a2 loc2)) =
   if Vector.length a1 /= Vector.length a2 then createBool loc1 False
   else eqList (Vector.toList a1) (Vector.toList a2) ptlsEquals loc1
@@ -190,94 +190,94 @@ ptlsEquals (PtlsTuple _ (PtlsLocated dl1 loc1) lb1 l1) (PtlsTuple _ (PtlsLocated
 ptlsEquals a b = createBool (getLocation a) (a == b)
 
 ptlsNotEquals :: Value -> Value -> Value
-ptlsNotEquals (PtlsException a) b = createException a
-ptlsNotEquals a (PtlsException b) = createException b
+ptlsNotEquals a@(PtlsException _) b = a
+ptlsNotEquals a b@(PtlsException _) = b
 ptlsNotEquals a b = ptlsNot (a `ptlsEquals` b)
 
 ptlsNot :: Value -> Value
 ptlsNot (PtlsBool (PtlsLocated b loc)) = createBool loc (not b)
-ptlsNot (PtlsException e) = createException e
+ptlsNot e@(PtlsException _) = e
 ptlsNot b = createException (createString (getLocation b) ("Can't negate " ++ show b))
 
 ptlsLessThan :: Value -> Value -> Value
 ptlsLessThan (PtlsNumber (PtlsLocated a loc)) (PtlsNumber (PtlsLocated b _)) = createBool loc (a < b)
-ptlsLessThan (PtlsException a) b = createException a
-ptlsLessThan a (PtlsException b) = createException b
+ptlsLessThan a@(PtlsException _) b = a
+ptlsLessThan a b@(PtlsException _) = b
 ptlsLessThan a b = createException (createString (getLocation a) ("Can't check '<' of " ++ show a ++ " with " ++ show b))
 
 ptlsLessEquals :: Value -> Value -> Value
 ptlsLessEquals (PtlsNumber (PtlsLocated a loc)) (PtlsNumber (PtlsLocated b _)) = createBool loc (a <= b)
-ptlsLessEquals (PtlsException a) b = createException a
-ptlsLessEquals a (PtlsException b) = createException b
+ptlsLessEquals a@(PtlsException _) b = a
+ptlsLessEquals a b@(PtlsException _) = b
 ptlsLessEquals a b = createException (createString (getLocation a) ("Can't check '<=' of " ++ show a ++ " with " ++ show b))
 
 ptlsGreaterThan :: Value -> Value -> Value
 ptlsGreaterThan (PtlsNumber (PtlsLocated a loc)) (PtlsNumber (PtlsLocated b _)) = createBool loc (a > b)
-ptlsGreaterThan (PtlsException a) b = createException a
-ptlsGreaterThan a (PtlsException b) = createException b
+ptlsGreaterThan a@(PtlsException _) b = a
+ptlsGreaterThan a b@(PtlsException _) = b
 ptlsGreaterThan a b = createException (createString (getLocation a) ("Can't check '>' of " ++ show a ++ " with " ++ show b))
 
 ptlsGreaterEquals :: Value -> Value -> Value
 ptlsGreaterEquals (PtlsNumber (PtlsLocated a loc)) (PtlsNumber (PtlsLocated b _)) = createBool loc (a >= b)
-ptlsGreaterEquals (PtlsException a) b = createException a
-ptlsGreaterEquals a (PtlsException b) = createException b
+ptlsGreaterEquals a@(PtlsException _) b = a
+ptlsGreaterEquals a b@(PtlsException _) = b
 ptlsGreaterEquals a b = createException (createString (getLocation a) ("Can't check '>=' of " ++ show a ++ " with " ++ show b))
 
 ptlsNegate :: Value -> Value
 ptlsNegate (PtlsNumber (PtlsLocated n loc)) = createNumber loc (n*(-1))
-ptlsNegate (PtlsException e) = createException e
+ptlsNegate e@(PtlsException _) = e
 ptlsNegate n = createException (createString (getLocation n) ("Can't tell the '-' of " ++ show n))
 
 ptlsAdd :: Value -> Value -> Value
 ptlsAdd (PtlsNumber (PtlsLocated a loc)) (PtlsNumber (PtlsLocated b _)) = createNumber loc (a+b)
 ptlsAdd (PtlsString (PtlsLocated a loc)) (PtlsString (PtlsLocated b _)) = createString loc (a++b)
-ptlsAdd (PtlsException a) _ = createException a
-ptlsAdd _ (PtlsException b) = createException b
+ptlsAdd a@(PtlsException _) _ = a
+ptlsAdd _ b@(PtlsException _) = b
 ptlsAdd a b = createException (createString (getLocation a) ("Can't add " ++ show a ++ " with " ++ show b))
 
 ptlsSub :: Value -> Value -> Value
 ptlsSub (PtlsNumber (PtlsLocated a loc)) (PtlsNumber (PtlsLocated b _)) = createNumber loc (a-b)
-ptlsSub (PtlsException a) b = createException a
-ptlsSub a (PtlsException b) = createException b
+ptlsSub a@(PtlsException _) b = a
+ptlsSub a b@(PtlsException _) = b
 ptlsSub a b = createException (createString (getLocation a) ("Can't subtract " ++ show a ++ " with " ++ show b))
 
 ptlsMul :: Value -> Value -> Value
 ptlsMul (PtlsNumber (PtlsLocated a loc)) (PtlsNumber (PtlsLocated b _)) = createNumber loc (a*b)
-ptlsMul (PtlsException a) b = createException a
-ptlsMul a (PtlsException b) = createException b
+ptlsMul a@(PtlsException _) b = a
+ptlsMul a b@(PtlsException _) = b
 ptlsMul a b = createException (createString (getLocation a) ("Can't multiply " ++ show a ++ " with " ++ show b))
 
 ptlsDiv :: Value -> Value -> Value
 ptlsDiv (PtlsNumber (PtlsLocated a loc)) (PtlsNumber (PtlsLocated 0 _)) = createException (createString loc "Division by zero")
 ptlsDiv (PtlsNumber (PtlsLocated a loc)) (PtlsNumber (PtlsLocated b _)) = createNumber loc (a/b)
-ptlsDiv (PtlsException a) b = createException a
-ptlsDiv a (PtlsException b) = createException b
+ptlsDiv a@(PtlsException _) b = a
+ptlsDiv a b@(PtlsException _) = b
 ptlsDiv a b = createException (createString (getLocation a) ("Can't divide " ++ show a ++ " with " ++ show b))
 
 ptlsMod :: Value -> Value -> Value
 ptlsMod (PtlsNumber (PtlsLocated a loc)) (PtlsNumber (PtlsLocated b _)) = createNumber loc (a - (b*tmp)) where
   tmp :: Float
   tmp = fromIntegral (quot (round a) (round b))
-ptlsMod (PtlsException a) b = createException a
-ptlsMod a (PtlsException b) = createException b
+ptlsMod a@(PtlsException _) b = a
+ptlsMod a b@(PtlsException _) = b
 ptlsMod a b = createException (createString (getLocation a) ("Can't modulus " ++ show a ++ " with " ++ show b))
 
 ptlsPow :: Value -> Value -> Value
 ptlsPow (PtlsNumber (PtlsLocated a loc)) (PtlsNumber (PtlsLocated b _)) = createNumber loc (a**b)
-ptlsPow (PtlsException a) b = createException a
-ptlsPow a (PtlsException b) = createException b
+ptlsPow a@(PtlsException _) b = a
+ptlsPow a b@(PtlsException _) = b
 ptlsPow a b = createException (createString (getLocation a) ("Can't exponentiate " ++ show a ++ " with " ++ show b))
 
 ptlsOr :: Value -> Value -> Value
 ptlsOr (PtlsBool (PtlsLocated a loc)) (PtlsBool (PtlsLocated b _)) = createBool loc (a || b)
-ptlsOr (PtlsException a) b = createException a
-ptlsOr a (PtlsException b) = createException b
+ptlsOr a@(PtlsException _) b = a
+ptlsOr a b@(PtlsException _) = b
 ptlsOr a b = createException (createString (getLocation a) ("Can't exponentiate " ++ show a ++ " with " ++ show b))
 
 ptlsAnd :: Value -> Value -> Value
 ptlsAnd (PtlsBool (PtlsLocated a loc)) (PtlsBool (PtlsLocated b _)) = createBool loc (a && b)
-ptlsAnd (PtlsException a) b = createException a
-ptlsAnd a (PtlsException b) = createException b
+ptlsAnd a@(PtlsException _) b = a
+ptlsAnd a b@(PtlsException _) = b
 ptlsAnd a b = createException (createString (getLocation a) ("Can't exponentiate " ++ show a ++ " with " ++ show b))
 
 is_ptlsTrue :: Value -> Bool
@@ -436,7 +436,7 @@ getProperty "!getLength" (PtlsTuple _ (PtlsLocated _ loc) _ ln) = createNumber l
 getProperty "!getList" (PtlsTuple _ (PtlsLocated ls loc) _ _) = createList loc ls
 getProperty "!getType" (PtlsTuple _ (PtlsLocated _ loc) _ _) = createLabel loc "PtlsTuple"
 getProperty "!getLabel" (PtlsTuple _ _ lb _) = lb
-getProperty _ (PtlsException e) = createException e
+getProperty _ e@(PtlsException _) = e
 getProperty o p = createException (createString (getLocation p) ("Can't get index " ++ show o ++ " from " ++ show p))
 
 exceptZip loc a b = if length a /= length b then error (show (createException (createString loc ("Can't destructure this tuple of length " ++ show(length b) ++ " to " ++ show(length a) ++ " names"))))
@@ -450,9 +450,9 @@ getRandom =
 updateTupleList l k r f eq = filter (\(x, y) -> not (is_ptlsTrue (x`eq`f k))) l ++ [(f k, r)]
 
 updateIndex :: Value -> Value -> Value -> Value
-updateIndex _ _ (PtlsException e) = createException e
-updateIndex _ (PtlsException e) _ = createException e
-updateIndex (PtlsException e) _ _ = createException e
+updateIndex _ _ e@(PtlsException _) = e
+updateIndex _ e@(PtlsException _) _ = e
+updateIndex e@(PtlsException _) _ _ = e
 updateIndex (PtlsDict m l) (PtlsNumber (PtlsLocated k lock)) r =
   internalCreateDict (StrictMap.insert (hash (createNumber lock k)) r `drill` m) (updateTupleList l k r (createNumber lock) ptlsEquals)
 updateIndex (PtlsDict m l) (PtlsString (PtlsLocated k lock)) r =
@@ -469,8 +469,8 @@ updateIndex (PtlsArray arr) (PtlsNumber (PtlsLocated n locn)) r =
 updateIndex k d _ = createException (createString (getLocation k) ("Can't change index " ++ show d ++ " of " ++ show k))
 
 updateField :: Value -> String -> Value -> Value
-updateField _ _ (PtlsException e) = createException e
-updateField (PtlsException e) _ _ = createException e
+updateField _ _ e@(PtlsException _) = e
+updateField e@(PtlsException _) _ _ = e
 updateField (PtlsObject o so ol) k r =
   internalCreateObject (StrictMap.insert (hash k) r `drill` o) (updateTupleList so k r id (\a b -> createBool (location o) (a == b))) ol
 updateField p d _ = createException (createString (getLocation p) ("Can't change index " ++ show d ++ " of " ++ show p))
