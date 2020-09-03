@@ -32,7 +32,7 @@ drill f v =
 data Value =
   PtlsString{strValue :: Locateable String}
   | PtlsBool{boolValue :: Locateable Bool}
-  | PtlsNumber{numValue :: Locateable Float}
+  | PtlsNumber{numValue :: Locateable Double}
   | PtlsBuiltIn{signature :: String, builtIn :: Locateable (Value -> Value)}
   | PtlsDict{dictValue :: Locateable (StrictMap.Map Int Value), showDictValue :: [(Value, Value)]}
   | PtlsSet{setValue :: Locateable (StrictMap.Map Int Value)}
@@ -256,7 +256,7 @@ ptlsDiv a b = createException (createString (getLocation a) ("Can't divide " ++ 
 
 ptlsMod :: Value -> Value -> Value
 ptlsMod (PtlsNumber (PtlsLocated a loc)) (PtlsNumber (PtlsLocated b _)) = createNumber loc (a - (b*tmp)) where
-  tmp :: Float
+  tmp :: Double
   tmp = fromIntegral (quot (round a) (round b))
 ptlsMod a@(PtlsException _) b = a
 ptlsMod a b@(PtlsException _) = b
@@ -444,7 +444,7 @@ exceptZip loc a b = if length a /= length b then error (show (createException (c
 
 getRandom =
   do
-   num <- randomIO :: IO Float
+   num <- randomIO :: IO Double
    return num
 
 updateTupleList l k r f eq = filter (\(x, y) -> not (is_ptlsTrue (x`eq`f k))) l ++ [(f k, r)]
