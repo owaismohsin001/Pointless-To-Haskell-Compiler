@@ -632,6 +632,7 @@ let compiled_text = compile(program, name, true)
 if not existsDir("output"):
   createDir("output")
 copyFile("PtlsRuntime.hs", "output/PtlsRuntime.hs")
+copyFile("Pointless.cabal", "output/Pointless.cabal")
 copyFile("rePrelude.hs", "output/rePrelude.hs")
-writeFile("output/" & name & ".hs", compiled_text)
+writeFile("output/main.hs", compiled_text)
 echo compiled_text
